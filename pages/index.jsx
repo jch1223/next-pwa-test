@@ -42,6 +42,45 @@ const Index = () => {
     return windowSize;
   }
 
+  let installPrompt = null;
+  useEffect(() => {
+    console.log('Listening for Install prompt');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // For older browsers
+      e.preventDefault();
+      console.log('Install Prompt fired');
+      installPrompt = e;
+      // See if the app is already installed, in that case, do nothing
+      if (
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true
+      ) {
+        return false;
+      }
+      // Set the state variable to make button visible
+      // this.setState({
+      //   installButton: true,
+      // });
+    });
+  }, []);
+
+  const installApp = async () => {
+    if (!installPrompt) return false;
+    installPrompt.prompt();
+    let outcome = await installPrompt.userChoice;
+    if (outcome.outcome == 'accepted') {
+      console.log('App Installed');
+    } else {
+      console.log('App not installed');
+    }
+    // Remove the event reference
+    installPrompt = null;
+    // Hide the button
+    // this.setState({
+    //   installButton:false
+    // })
+  };
+
   return (
     <Layout focus={focus}>
       <MainBannerStyled>
@@ -50,6 +89,7 @@ const Index = () => {
             <div className='mainCopy'>
               <ScrollAnimation className='copy1' animateIn='fadeInUp' animateOnce={true}>
                 <div id='copy1'> FRONT-END</div>
+                <button onClick={installApp}>다운로드</button>
               </ScrollAnimation>
               <ScrollAnimation
                 className='copy2'
